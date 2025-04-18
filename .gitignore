@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+staticfiles/
+.env
+*.pkl
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# VS Code and IDEs
+.vscode/
+.idea/
+*.swp
+
+# macOS and Linux
+.DS_Store
+# Ignore large YOLO model weights
+static/yolo_weights/
+

@@ -1,0 +1,77 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}Diagnosis History | LesionLens{% endblock %}
+
+{% block content %}
+<div class="screen-1">
+    <span>Diagnosis History</span>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>Phone</th>
+                <th>Date</th>
+                <th>Diagnosis Status</th>
+                <th>Annotated Image</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.patient.full_name }}</td>
+                <td>{{ record.patient.email }}</td>
+                <td>{{ record.patient.phone }}</td>
+                <td>
+                    {% if record.diagnosis %}
+                        {{ record.diagnosis.date|date:"Y-m-d" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if record.diagnosis %}
+                        {{ record.diagnosis.status }}
+                    {% else %}
+                        Pending
+                    {% endif %}
+                </td>
+                <td>
+                    {% if record.diagnosis and record.diagnosis.image %}
+                        <a href="{{ record.diagnosis.image.url }}" target="_blank">
+                            <img src="{{ record.diagnosis.image.url }}" alt="Annotated"
+                                 style="height: 60px; border-radius: 5px;">
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td style="display: flex; gap: 10px; justify-content: center;">
+                    <a 
+                        href="{% url 'edit_patient' record.patient.id %}" 
+                        class="diagnosis-button"
+                        style="display: inline-block; padding: 6px 12px; border-radius: 30px; background-color: #e0437d; color: white; font-size: 14px; text-decoration: none;"
+                    >
+                        Edit
+                    </a>
+
+                    <a 
+                        href="{% url 'home' %}?email={{ record.patient.email }}&name={{ record.patient.full_name|urlencode }}" 
+                        class="diagnosis-button" 
+                        style="display: inline-block; padding: 6px 12px; border-radius: 30px; background-color: #3e4684; color: white; font-size: 14px; text-decoration: none;"
+                    >
+                        Diagnose Now
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No records available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

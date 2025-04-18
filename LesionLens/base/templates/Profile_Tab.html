@@ -1,0 +1,85 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}Profile | LesionLens{% endblock %}
+
+{% block content %}
+<div class="screen-1">
+  <h2>Edit Profile</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Profile Photo -->
+    <label for="profile_photo" style="cursor: pointer; display: flex; justify-content: center;">
+      {% if user.profile_photo %}
+        <img id="preview" src="{{ user.profile_photo.url }}" alt="Profile Photo"
+             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background-color: #eee;" />
+      {% else %}
+        <div id="preview" style="width: 100px; height: 100px; border-radius: 50%; background-color: #ddd;
+             display: flex; align-items: center; justify-content: center; font-size: 14px; color: #555;">
+          No Photo
+        </div>
+      {% endif %}
+    </label>
+    <input type="file" id="profile_photo" name="profile_photo" accept="image/*" style="display: none;" onchange="previewPhoto(event)">
+
+    <!-- Username -->
+    <div class="form-row">
+      <div class="form-group full-width">
+        <label>Username</label>
+        <input type="text" name="username" value="{{ user.username }}">
+      </div>
+    </div>
+
+    <!-- First and Last Name -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" name="first_name" value="{{ user.first_name }}">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" name="last_name" value="{{ user.last_name }}">
+      </div>
+    </div>
+
+    <!-- Email and Phone -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ user.email }}">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ user.phone }}">
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div style="text-align: center; margin-top: 20px;">
+      <button type="submit" class="save-button">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function previewPhoto(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      const output = document.getElementById('preview');
+      if (output.tagName.toLowerCase() === 'img') {
+        output.src = reader.result;
+      } else {
+        const img = document.createElement('img');
+        img.src = reader.result;
+        img.style.width = '100px';
+        img.style.height = '100px';
+        img.style.borderRadius = '50%';
+        img.style.objectFit = 'cover';
+        output.replaceWith(img);
+        img.id = 'preview';
+      }
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>
+{% endblock %}

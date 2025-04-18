@@ -27,3 +27,4 @@ ENV/
 # Ignore large YOLO model weights
 static/yolo_weights/
 /LesionLens/LesionLens/static/yolo_weights/best.pt
+LesionLens/static/yolo_weights/best.pt

@@ -632,3 +632,29 @@ table td {
 .dropdown:hover .dropdown-content {
     display: block;
 }
+
+.pdf-report {
+    padding: 30px;
+    font-size: 14px;
+    color: #333;
+}
+
+.section-heading {
+    font-weight: bold;
+    font-size: 22px;
+    color: #35425D;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.section-subheading {
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #3e4684;
+}
+
+ul, ol {
+    margin-left: 20px;
+}

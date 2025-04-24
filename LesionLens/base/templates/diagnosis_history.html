@@ -15,6 +15,7 @@
                 <th>Date</th>
                 <th>Diagnosis Status</th>
                 <th>Annotated Image</th>
+                <th>Report</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -48,27 +49,32 @@
                         -
                     {% endif %}
                 </td>
+                <td>
+                    {% if record.diagnosis and record.diagnosis.report_pdf %}
+                        <a href="{{ record.diagnosis.report_pdf.url }}" target="_blank"
+                           class="diagnosis-button"
+                           style="background-color: #4CAF50; color: white; padding: 6px 12px; border-radius: 30px; text-decoration: none; font-size: 14px;">
+                            View Report
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
                 <td style="display: flex; gap: 10px; justify-content: center;">
-                    <a 
-                        href="{% url 'edit_patient' record.patient.id %}" 
-                        class="diagnosis-button"
-                        style="display: inline-block; padding: 6px 12px; border-radius: 30px; background-color: #e0437d; color: white; font-size: 14px; text-decoration: none;"
-                    >
+                    <a href="{% url 'edit_patient' record.patient.id %}" class="diagnosis-button"
+                       style="padding: 6px 12px; border-radius: 30px; background-color: #e0437d; color: white; font-size: 14px; text-decoration: none;">
                         Edit
                     </a>
-
-                    <a 
-                        href="{% url 'home' %}?email={{ record.patient.email }}&name={{ record.patient.full_name|urlencode }}" 
-                        class="diagnosis-button" 
-                        style="display: inline-block; padding: 6px 12px; border-radius: 30px; background-color: #3e4684; color: white; font-size: 14px; text-decoration: none;"
-                    >
+                    <a href="{% url 'home' %}?email={{ record.patient.email }}&name={{ record.patient.full_name|urlencode }}"
+                       class="diagnosis-button"
+                       style="padding: 6px 12px; border-radius: 30px; background-color: #3e4684; color: white; font-size: 14px; text-decoration: none;">
                         Diagnose Now
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7">No records available.</td>
+                <td colspan="8">No records available.</td>
             </tr>
             {% endfor %}
         </tbody>

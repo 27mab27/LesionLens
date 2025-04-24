@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        {{ css }}
+    </style>
+</head>
+<body>
+    <div class="lesionlens-header">Lesion<span style="color: #e0437d;">Lens</span></div>
+
+    <div class="section-subheading">Clinical Diagnosis Report: Intra-Bony Lesions</div>
+
+    <p><strong>Patient Name:</strong> {{ patient_name }}<br>
+    <strong>Examination Date:</strong> {{ date }}<br>
+    <strong>Clinician:</strong> {{ clinician }}</p>
+
+    <div class="section-subheading">Lesion Descriptions and Locations:</div>
+    {% for lesion in lesions %}
+        <p>
+            <strong>{{ forloop.counter }}. {{ lesion.location }} Lesion</strong><br>
+            <strong>Location:</strong> {{ lesion.location }}<br>
+            <strong>Detection Confidence:</strong> {{ lesion.confidence }}<br>
+            <strong>Description:</strong> {{ lesion.description }}
+        </p>
+    {% endfor %}
+
+    <div class="section-subheading">Possible Diagnosis:</div>
+    <ul>
+        <li>Odontogenic cysts (e.g., dentigerous cyst, radicular cyst)</li>
+        <li>Benign odontogenic tumors (e.g., ameloblastoma, odontoma)</li>
+        <li>Non-odontogenic cysts/tumors (e.g., central giant cell granuloma)</li>
+        <li>Malignant lesions (less likely but considered)</li>
+    </ul>
+
+    <div class="section-subheading">Recommended Next Steps:</div>
+    <ol>
+        <li>CBCT scan for lesion characterization</li>
+        <li>Biopsy if aggressive or atypical findings present</li>
+        <li>Referral to oral/maxillofacial specialist</li>
+    </ol>
+
+    <div class="section-subheading">Conclusion:</div>
+    <p>
+        The lesions identified in this radiograph require timely clinical evaluation.
+        Proper management as recommended will help ensure optimal patient outcomes.
+    </p>
+
+    <p style="margin-top: 40px;">
+        <strong>Radiologist Signature:</strong><br>
+        {{ clinician }}
+    </p>
+</body>
+</html>

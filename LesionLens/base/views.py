@@ -17,8 +17,11 @@ from .decorators import approved_specialist_required
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
-
+from .lesion_agent import generate_diagnostic_report
+from .utils.pdf_generator import generate_html_pdf
+import os
+from datetime import datetime
+import uuid
 
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'static', 'yolo_weights', 'best.pt')
 model = YOLO(MODEL_PATH)
@@ -32,8 +35,8 @@ def run_yolo_on_image(patient, image_path):
         source=image_path,
         conf=0.5,
         iou=0.45,
-        hide_labels=True,
-        hide_conf=True
+        hide_labels=False,
+        hide_conf=False
     )
     end_time = time.time()
     inference_time = round(end_time - start_time, 2)
@@ -53,13 +56,14 @@ def run_yolo_on_image(patient, image_path):
 
     return class_name, confidence, inference_time
 
-@approved_specialist_required
+
 @approved_specialist_required
 def home(request):
     class_name = None
     confidence = None
     inference_time = None
     annotated_url = None
+    report_text = None
 
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
@@ -72,7 +76,7 @@ def home(request):
                 patient = Patient.objects.create(
                     email=email,
                     full_name=full_name,
-                    created_by=request.user  # optional if you track who added them
+                    created_by=request.user
                 )
 
             diagnosis = Diagnosis.objects.create(
@@ -83,14 +87,14 @@ def home(request):
 
             image_path = diagnosis.image.path
 
-            # YOLO Inference
+            # YOLO Detection
             start_time = time.time()
             results = model.predict(
                 source=image_path,
                 conf=0.5,
                 iou=0.45,
-                hide_labels=True,
-                hide_conf=True
+                hide_labels=False,
+                hide_conf=False
             )
             end_time = time.time()
             inference_time = round(end_time - start_time, 2)
@@ -100,11 +104,36 @@ def home(request):
                 cls_id = int(box.cls[0])
                 class_name = model.names.get(cls_id, f"Class {cls_id}")
                 confidence = float(box.conf[0])
+
+                bbox = box.xyxy[0].tolist()
+                location = map_bbox_to_location(bbox)
+
+                # Report context for PDF
+                context = {
+                    "patient_name": patient.full_name,
+                    "date": datetime.today().strftime('%Y-%m-%d'),
+                    "clinician": "Dr. AI Lens",
+                    "lesions": [
+                        {
+                            "location": location,
+                            "confidence": f"{confidence * 100:.1f}%",
+                            "description": "The AI model suggests a radiographic abnormality in this region requiring clinical evaluation."
+                        }
+                    ]
+                }
+
+                # 🧠 Generate & Save PDF
+                pdf_file = generate_html_pdf(context)
+                diagnosis.report_pdf.save(f"{patient.full_name}_diagnosis.pdf", pdf_file)
+
+                report_text = "PDF diagnosis generated successfully."
+
             else:
                 class_name = "No lesions detected"
                 confidence = 0.0
+                report_text = "No lesions detected in the uploaded image."
 
-            # Annotate + overwrite
+            # Annotated Image Save
             annotated_array = results[0].plot(boxes=True, labels=False, conf=False)
             annotated_image = Image.fromarray(annotated_array)
             annotated_image.save(image_path)
@@ -118,8 +147,21 @@ def home(request):
         'class_name': class_name,
         'confidence': confidence,
         'inference_time': inference_time,
-        'annotated_url': annotated_url
+        'annotated_url': annotated_url,
+        'report_text': report_text
     })
+
+# Helper function
+def map_bbox_to_location(bbox, image_width=1000):
+    x, y, w, h = bbox
+    center_x = x + w / 2
+
+    if center_x < image_width * 0.33:
+        return "left mandible"
+    elif center_x < image_width * 0.66:
+        return "central mandibular region"
+    else:
+        return "right mandible"
 
 
 def login_view(request):
@@ -417,5 +459,7 @@ def manage_users(request):
 
     specialists = CustomUser.objects.filter(role='specialist')
     return render(request, 'manage_users.html', {'specialists': specialists})
+
+
 
 

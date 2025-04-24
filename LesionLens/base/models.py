@@ -45,6 +45,8 @@ class Diagnosis(models.Model):
         choices=[('Lesion', 'Lesion'), ('Non-Lesion', 'Non-Lesion'), ('Pending', 'Pending')],
         default='Pending'
     )
+    report_pdf = models.FileField(upload_to='diagnosis_reports/', null=True, blank=True)
+
 
     def __str__(self):
         return f"{self.patient.full_name} - {self.status}"

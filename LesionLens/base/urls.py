@@ -14,6 +14,7 @@ urlpatterns = [
     path('profile/', views.profile_tab, name='profile_tab'),
     path('diagnosis-history/', views.diagnosis_history, name='diagnosis_history'),
     path('ajax/get-patient-name/', views.get_patient_name, name='get_patient_name'),
+    path('ajax/get-patient-info/', views.get_patient_info, name='get_patient_info'),
     path('ajax/diagnose-now/', views.ajax_diagnose_now, name='ajax_diagnose_now'),
     path('manage-users/', views.manage_users, name='manage_users'),
     path('logout/', views.logout_view, name='logout'),

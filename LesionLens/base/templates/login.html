@@ -3,23 +3,37 @@
 {% block title %}Login | LesionLens{% endblock %}
 
 {% block content %}
+{% if messages %}
+  <div>
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" style="text-align:center; margin-bottom:10px;">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
 <div class="screen-1">
     <span>Login</span>
     <form method="post">
         {% csrf_token %}
         <div class="form-group full-width">
-            <label for="username">Email Address</label>
-            <input type="text" name="username" id="username" placeholder="Username@gmail.com" required>
+            <label for="username">Email or Username</label>
+            <input type="text" name="username" id="username" required maxlength="100" placeholder="Enter your email or username">
         </div>
+        <br>
 
         <div class="form-group full-width">
             <label for="password">Password</label>
             <input type="password" name="password" id="password" placeholder="••••••" required>
         </div>
-
-        <button class="login" type="submit">Login</button>
+        <br>
+        <div style="display: flex; justify-content: center;">
+            <button class="login" type="submit" style="min-width: 120px;">Login</button>
+        </div>
 
         <div class="bottom-links">
+            <br>
             <a href="{% url 'password_reset' %}">Forgot Password?</a>
             <span> | </span>
             <a href="{% url 'signup' %}">Create an Account</a>

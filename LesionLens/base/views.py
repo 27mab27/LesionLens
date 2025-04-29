@@ -66,14 +66,16 @@ def home(request):
     report_text = None
 
     if request.method == 'POST':
+        patient_id = request.POST.get('patient_id')
         full_name = request.POST.get('full_name')
         email = request.POST.get('email')
         image_file = request.FILES.get('xray_image')
 
-        if image_file and email:
-            patient = Patient.objects.filter(email=email).first()
+        if image_file and patient_id:
+            patient = Patient.objects.filter(patient_id=patient_id).first()
             if not patient:
                 patient = Patient.objects.create(
+                    patient_id=patient_id,
                     email=email,
                     full_name=full_name,
                     created_by=request.user
@@ -176,8 +178,16 @@ def login_view(request):
             return redirect('login')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username_or_email = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        # Try to find user by email if not found by username
+        User = get_user_model()
+        user_obj = User.objects.filter(email=username_or_email).first()
+        if user_obj:
+            username = user_obj.username
+        else:
+            username = username_or_email
 
         user = authenticate(request, username=username, password=password)
 
@@ -195,39 +205,6 @@ def login_view(request):
             messages.error(request, 'Invalid credentials')
     
     return render(request, 'login.html')
-
-    if request.user.is_authenticated:
-        if request.user.is_superuser:
-            return redirect('manage_users')
-        elif hasattr(request.user, 'specialist') and request.user.specialist.is_approved:
-            return redirect('home')
-        else:
-            messages.error(request, 'Your account is not approved yet.')
-            logout(request)
-            return redirect('login')
-
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            if user.is_superuser:
-                return redirect('manage_users')
-            elif hasattr(user, 'specialist') and user.specialist.is_approved:
-                return redirect('home')
-            else:
-                messages.error(request, 'Your account is not approved yet.')
-                logout(request)
-                return redirect('login')
-        else:
-            messages.error(request, 'Invalid credentials')
-    
-    return render(request, 'login.html')
-
-    
 
 
 User = get_user_model()
@@ -280,6 +257,7 @@ def add_user(request):
 @approved_specialist_required
 def add_patient(request):
     if request.method == 'POST':
+        patient_id = request.POST.get('patient_id', '')
         full_name = request.POST.get('full_name', '')
         email = request.POST.get('email', '')
         phone = request.POST.get('phone', '')
@@ -291,6 +269,7 @@ def add_patient(request):
         description = request.POST.get('description', '')
 
         Patient.objects.create(
+            patient_id=patient_id,
             full_name=full_name,
             email=email,
             phone=phone,
@@ -300,7 +279,7 @@ def add_patient(request):
             weight=weight,
             height=height,
             description=description,
-            created_by=request.user  # 👈 New field
+            created_by=request.user
         )
 
         messages.success(request, "Patient added successfully!")
@@ -373,6 +352,20 @@ def get_patient_name(request):
         except Patient.DoesNotExist:
             return JsonResponse({'name': ''})
     return JsonResponse({'name': ''})
+
+
+def get_patient_info(request):
+    patient_id = request.GET.get('patient_id')
+    if patient_id:
+        try:
+            patient = Patient.objects.get(patient_id=patient_id)
+            return JsonResponse({
+                'name': patient.full_name,
+                'email': patient.email
+            })
+        except Patient.DoesNotExist:
+            return JsonResponse({'name': '', 'email': ''})
+    return JsonResponse({'name': '', 'email': ''})
 
 
 def ajax_diagnose_now(request):

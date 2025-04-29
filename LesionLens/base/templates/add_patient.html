@@ -6,6 +6,18 @@
     <form method="post">
         {% csrf_token %}
         <div class="form-row">
+            <div class="form-group" style="width: 100%;">
+                <label for="patient_id">Patient ID</label>
+                <input 
+                    type="text" 
+                    name="patient_id" 
+                    id="patient_id" 
+                    placeholder="Enter patient ID" 
+                    required
+                >
+            </div>
+        </div>
+        <div class="form-row">
             <div class="form-group">
                 <label for="full_name">Full Name</label>
                 <input 

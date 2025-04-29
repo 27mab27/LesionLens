@@ -3,37 +3,48 @@
 {% block title %}Home | LesionLens{% endblock %}
 
 {% block content %}
-<div class="screen-1">
-    <span>Diagnose with LesionLens</span>
-
+<div class="screen-1" style="margin-top: 32px;">
+    <h2 style="text-align: center; font-weight: bold; color: #3e4684; margin-bottom: 24px;">Diagnose with LesionLens</h2>
     <form method="POST" enctype="multipart/form-data" style="display: contents;">
         {% csrf_token %}
 
-        <!-- Email First -->
-        <div class="form-group">
-            <label for="patient-email">Email</label>
-            <input type="email" id="patient-email" name="email" placeholder="Enter patient email" required>
+        <!-- Patient ID First -->
+        <div class="form-group" style="width: 100%;">
+            <label for="patient-id">Patient ID</label>
+            <input type="text" id="patient-id" name="patient_id" placeholder="Enter patient ID" required style="width: 100%;">
         </div>
 
-        <!-- Patient Name Second -->
-        <div class="form-group">
+        <!-- Email -->
+        <div class="form-group" style="width: 100%;">
+            <label for="patient-email">Email</label>
+            <input type="email" id="patient-email" name="email" placeholder="Enter patient email" required style="width: 100%;">
+        </div>
+
+        <!-- Patient Name -->
+        <div class="form-group" style="width: 100%;">
             <label for="patient-name">Patient Name</label>
-            <input type="text" id="patient-name" name="full_name" placeholder="Enter patient name" required>
+            <input type="text" id="patient-name" name="full_name" placeholder="Enter patient name" required style="width: 100%;">
         </div>
 
         <!-- Upload Box -->
         <div class="upload-container">
-            <div class="upload-box" id="uploadBox">
+            <div style="width: 100%; text-align: left; margin-bottom: 8px;">
+                <label for="xray_image" style="font-weight: bold; color: #3e4684;">Upload X-Ray Image</label>
+            </div>
+            <div class="upload-box" id="uploadBox" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
                 {% if annotated_url %}
                     <a href="{{ annotated_url }}" target="_blank">
                         <img id="previewImage" src="{{ annotated_url }}" alt="Annotated Result"
                             style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px;">
                     </a>
                 {% else %}
-                    <p id="uploadText">Select an image for diagnosis</p>
-                    <img id="previewImage"
-                        style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 6px;"
-                        alt="Preview" />
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2.5em; color: #3e4684; margin-bottom: 8px;"></i>
+                        <p id="uploadText" style="margin: 0;">Select an image for diagnosis</p>
+                        <img id="previewImage"
+                            style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 6px; margin-top: 10px;"
+                            alt="Preview" />
+                    </div>
                 {% endif %}
                 <input type="file" id="xray_image" name="xray_image" accept="image/*" style="display: none;" required>
             </div>
@@ -41,7 +52,7 @@
 
         <!-- Error Message -->
         <div id="formError" style="color: red; font-weight: bold; margin-top: 10px;"></div>
-        <button type="submit" class="add-patient" id="diagnoseBtn">Diagnose</button>
+        <button type="submit" class="add-patient" id="diagnoseBtn" style="width: 100%;">Diagnose</button>
     </form>
 
     {% if class_name or confidence or inference_time %}
@@ -56,14 +67,29 @@
 <!-- Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Autofill name and email by patient ID
+    const patientIdInput = document.getElementById('patient-id');
+    const nameInput = document.getElementById('patient-name');
+    const emailInput = document.getElementById('patient-email');
+    patientIdInput.addEventListener('blur', function () {
+        const patientId = patientIdInput.value;
+        if (patientId) {
+            fetch(`/ajax/get-patient-info/?patient_id=${encodeURIComponent(patientId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.name) nameInput.value = data.name;
+                    if (data.email) emailInput.value = data.email;
+                });
+        }
+    });
+
+    // Upload logic
     const uploadBox = document.getElementById('uploadBox');
     const uploadText = document.getElementById('uploadText');
     const previewImage = document.getElementById('previewImage');
     const fileInput = document.getElementById('xray_image');
-
     {% if not annotated_url %}
     uploadBox.addEventListener('click', () => fileInput.click());
-
     fileInput.addEventListener('change', () => {
         if (fileInput.files && fileInput.files[0]) {
             const reader = new FileReader();
@@ -76,43 +102,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     {% endif %}
-});
-</script>
 
-<!-- Autofill name by email -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const emailInput = document.getElementById('patient-email');
-    const nameInput = document.getElementById('patient-name');
-
-    emailInput.addEventListener('blur', function () {
-        const email = emailInput.value;
-        if (email) {
-            fetch(`/ajax/get-patient-name/?email=${encodeURIComponent(email)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.name) {
-                        nameInput.value = data.name;
-                    }
-                });
-        }
-    });
-});
-</script>
-
-<!-- Client-side validation -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+    // Form validation
     const form = document.querySelector('form');
-    const nameInput = document.getElementById('patient-name');
-    const emailInput = document.getElementById('patient-email');
     const imageInput = document.getElementById('xray_image');
     const errorBox = document.getElementById('formError');
-
     form.addEventListener('submit', function (e) {
         errorBox.textContent = '';
-        if (!emailInput.value.trim() || !nameInput.value.trim() || !imageInput.files.length) {
+        if (!patientIdInput.value.trim() || !emailInput.value.trim() || !nameInput.value.trim() || !imageInput.files.length) {
             e.preventDefault();
+            if (!patientIdInput.value.trim()) errorBox.textContent += 'Please enter a patient ID. ';
             if (!emailInput.value.trim()) errorBox.textContent += 'Please enter an email. ';
             if (!nameInput.value.trim()) errorBox.textContent += 'Please enter the patient name. ';
             if (!imageInput.files.length) errorBox.textContent += 'Please upload an image.';

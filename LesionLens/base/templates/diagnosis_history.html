@@ -9,10 +9,10 @@
     <table>
         <thead>
             <tr>
+                <th>Patient ID</th>
                 <th>Full Name</th>
                 <th>Email Address</th>
                 <th>Phone</th>
-                <th>Date</th>
                 <th>Diagnosis Status</th>
                 <th>Annotated Image</th>
                 <th>Report</th>
@@ -22,16 +22,10 @@
         <tbody>
             {% for record in records %}
             <tr>
+                <td>{{ record.patient.patient_id }}</td>
                 <td>{{ record.patient.full_name }}</td>
                 <td>{{ record.patient.email }}</td>
                 <td>{{ record.patient.phone }}</td>
-                <td>
-                    {% if record.diagnosis %}
-                        {{ record.diagnosis.date|date:"Y-m-d" }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
                 <td>
                     {% if record.diagnosis %}
                         {{ record.diagnosis.status }}

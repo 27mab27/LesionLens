@@ -238,12 +238,12 @@ def signup_view(request):
             first_name=first_name,
             last_name=last_name,
             role='specialist',
-            is_approved=False
+            is_approved=True  # Approve by default
         )
         user.phone = phone
         user.save()
 
-        messages.success(request, "Account created. Wait for admin approval.")
+        messages.success(request, "Account created and approved.")
         return redirect('login')
 
     return render(request, 'signup.html')
